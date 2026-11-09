@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Break Format Builder</title>
+<meta name="description" content="Read network break-format screenshots in your browser, save each format, and write break structures such as 'Network Format: CFTB; 60s duration @ 0:15, 0:45' for program files.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%23167c77%27/%3E%3Crect x=%277%27 y=%2711%27 width=%2718%27 height=%273%27 fill=%27white%27/%3E%3Crect x=%277%27 y=%2718%27 width=%2711%27 height=%273%27 fill=%27white%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Break Format Builder</h1>
+    <p class="sub">Read a break-format snip, save it under its Network Format, then stamp break structures onto program lines. Everything runs in your browser; snips are never uploaded.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-read" aria-selected="true" aria-controls="p-read" data-tab="read">Read snips</button>
+    <button role="tab" id="tab-lib" aria-selected="false" aria-controls="p-lib" data-tab="lib">Format library <span id="libcount"></span></button>
+    <button role="tab" id="tab-prog" aria-selected="false" aria-controls="p-prog" data-tab="prog">Program file</button>
+    <button role="tab" id="tab-help" aria-selected="false" aria-controls="p-help" data-tab="help">How it works</button>
+  </nav>
+
+  <!-- READ SNIPS -->
+  <section id="p-read" role="tabpanel" aria-labelledby="tab-read" class="stack">
+    <div class="drop" id="drop">
+      <div>
+        <p class="big">Drop snips here, paste one with Ctrl+V, or pick files</p>
+        <p class="hint tight">Several at once is fine. The Format Name in each snip becomes its Network Format. Check the rows against the picture, edit anything that is off, then save.</p>
+      </div>
+      <div class="btnrow">
+        <label class="btn primary" for="file">Choose snips</label>
+        <input type="file" id="file" accept="image/*" multiple hidden>
+        <button class="btn" id="blank" type="button">Start blank format</button>
+      </div>
+    </div>
+    <div id="drafts" class="stack"></div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="p-lib" role="tabpanel" aria-labelledby="tab-lib" class="stack" hidden>
+    <div>
+      <h2>Saved formats</h2>
+      <p class="hint">Saved in this browser, so each snip only has to be read once. Export a file to move your formats to another browser or computer.</p>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="bkexport" type="button">Export formats</button>
+      <label class="btn" for="bkfile">Import formats</label>
+      <input type="file" id="bkfile" accept="application/json,.json" hidden>
+      <button class="btn" id="loadex" type="button">Load example formats</button>
+      <span class="meta" id="bkmsg" role="status"></span>
+    </div>
+    <div id="lib" class="lib"></div>
+  </section>
+
+  <!-- PROGRAM FILE -->
+  <section id="p-prog" role="tabpanel" aria-labelledby="tab-prog" class="stack" hidden>
+    <div>
+      <h2>Program file</h2>
+      <p class="hint">One program per line, containing <span class="mono">format CODE</span>. Everything after the code is replaced with that format's break structure from your library.</p>
+    </div>
+    <div class="prog-grid">
+      <div class="card">
+        <label for="progin" class="rule">Input lines</label>
+        <textarea id="progin" rows="9" spellcheck="false" placeholder="11/14/2026 06:30 PM to 09:30 PM “College Football” format CFTB"></textarea>
+        <div class="actions"><button class="btn sm" id="progex" type="button">Load example lines</button></div>
+      </div>
+      <div class="card">
+        <div class="resHead">
+          <h2 class="flat">Result <span class="meta" id="progsum"></span></h2>
+          <div class="btnrow"><button class="btn primary sm" id="progcopy" type="button">Copy all lines</button><button class="btn sm" id="progdl" type="button">Download .txt</button></div>
+        </div>
+        <div id="progout" class="res"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HELP -->
+  <section id="p-help" role="tabpanel" aria-labelledby="tab-help" class="stack" hidden>
+    <div class="card prose">
+      <h2>How it works</h2>
+      <ol>
+        <li><strong>Read a snip.</strong> The reader finds the Format Name, the Duration and each row's Center Time and Break Duration. It runs entirely in your browser.</li>
+        <li><strong>Check it.</strong> Compare the table with the picture next to it and fix any digit the reader got wrong. Cells that cannot be understood turn red.</li>
+        <li><strong>Save it.</strong> The Format Name becomes the Network Format. Saved formats are remembered in this browser.</li>
+        <li><strong>Use it.</strong> The output line lists break lengths from longest to shortest, with center times in ascending order inside each length.</li>
+      </ol>
+      <p class="mono block">Network Format: 180-8; 120s duration @ 0:45; 60s duration @ 0:15, 0:31, 01:15</p>
+      <h2>Good to know</h2>
+      <ul>
+        <li>The first snip downloads the reader (about 11 MB) once; after that it works offline.</li>
+        <li>Clean, full-size screenshots read best. Zoom the table to fill the screenshot if rows come out wrong.</li>
+        <li>Centers like <span class="mono">0:15</span> mean 00:15:00 into the program. Hour 0 is written <span class="mono">0:MM</span> and later hours <span class="mono">01:MM</span>.</li>
+        <li>Saved formats are stored only in your browser. Use Export formats to back them up.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="vendor/tesseract/tesseract.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
